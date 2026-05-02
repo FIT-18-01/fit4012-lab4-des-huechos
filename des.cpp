@@ -2,6 +2,7 @@
 #include <string>
 #include <bitset>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 // Helper function: Covert decimal to 4-bit binary string
@@ -137,9 +138,6 @@ public:
             }
 
             roundKeys.push_back(roundKey);
-
-            // Optional: print key
-            cout << "Key " << i + 1 << ": " << roundKey << endl;
         }
     }
 
@@ -276,31 +274,178 @@ class DES {
     
             return ciphertext;
         }
+
+        string decrypt(const string& input) {
+            // Apply initial permutation outside class
+            string perm = initial_permutation(input);
+            string left = perm.substr(0, 32);
+            string right = perm.substr(32, 32);
+    
+            for (int i = 0; i < 16; i++) {
+                string right_expanded = "";
+                for (int j = 0; j < 48; j++) {
+                    right_expanded += right[expansion_table[j] - 1];
+                }
+    
+                string xored = Xor(round_keys[15 - i], right_expanded);
+    
+                string res = "";
+                for (int j = 0; j < 8; j++) {
+                    string row1 = xored.substr(j * 6, 1) + xored.substr(j * 6 + 5, 1);
+                    int row = convert_binary_to_decimal(row1);
+    
+                    string col1 = xored.substr(j * 6 + 1, 4);
+                    int col = convert_binary_to_decimal(col1);
+    
+                    int val = substition_boxes[j][row][col];
+                    res += convert_decimal_to_binary(val);
+                }
+    
+                string perm2 = "";
+                for (int j = 0; j < 32; j++) {
+                    perm2 += res[permutation_tab[j] - 1];
+                }
+    
+                string new_right = Xor(perm2, left);
+                left = right;
+                right = new_right;
+            }
+    
+            string combined_text = right + left;
+            string plaintext = inverse_initial_permutation(combined_text);
+            return plaintext;
+        }
 };
-    
-// Main function
-int main() {
-    // Example plaintext (64 bits)
-    string plaintext = "0001001000110100010101100111100010011010101111001101111011110001";
-    
-    // Example key (64 bits)
-    string key = "0001001100110100010101110111100110011011101111001101111111110001";
-    
-    // Generate round keys
+
+static bool is_binary_string(const string& s) {
+    return !s.empty() && all_of(s.begin(), s.end(), [](char c) { return c == '0' || c == '1'; });
+}
+
+static string pad_to_64(const string& bits) {
+    size_t rem = bits.size() % 64;
+    if (rem == 0) return bits;
+    return bits + string(64 - rem, '0');
+}
+
+static vector<string> split_blocks(const string& bits) {
+    vector<string> blocks;
+    for (size_t i = 0; i < bits.size(); i += 64) {
+        blocks.push_back(bits.substr(i, 64));
+    }
+    return blocks;
+}
+
+static string des_encrypt_block(const string& block, const string& key) {
     KeyGenerator keygen(key);
-    keygen.generateRoundKeys(); 
-    
-    vector<string> roundKeys = keygen.getRoundKeys();
-    
-    // Create DES object
-    DES des(roundKeys);
-    
-    // Encrypt
-    string ciphertext = des.encrypt(plaintext);
-    
-    cout << "Ciphertext: " << ciphertext << endl;
-    
-    return 0;
+    keygen.generateRoundKeys();
+    DES des(keygen.getRoundKeys());
+    return des.encrypt(block);
+}
+
+static string des_decrypt_block(const string& block, const string& key) {
+    KeyGenerator keygen(key);
+    keygen.generateRoundKeys();
+    DES des(keygen.getRoundKeys());
+    return des.decrypt(block);
+}
+
+static string process_des_encrypt(const string& plaintext, const string& key) {
+    string padded = pad_to_64(plaintext);
+    vector<string> blocks = split_blocks(padded);
+    string result = "";
+    for (const string& block: blocks) {
+        result += des_encrypt_block(block, key);
+    }
+    return result;
+}
+
+static string process_des_decrypt(const string& ciphertext, const string& key) {
+    if (ciphertext.size() % 64 != 0) {
+        return "";
+    }
+    vector<string> blocks = split_blocks(ciphertext);
+    string result = "";
+    for (const string& block: blocks) {
+        result += des_decrypt_block(block, key);
+    }
+    return result;
+}
+
+static string process_triple_des_encrypt(const string& plaintext, const string& k1, const string& k2, const string& k3) {
+    string step1 = des_encrypt_block(plaintext, k1);
+    string step2 = des_decrypt_block(step1, k2);
+    return des_encrypt_block(step2, k3);
+}
+
+static string process_triple_des_decrypt(const string& ciphertext, const string& k1, const string& k2, const string& k3) {
+    string step1 = des_decrypt_block(ciphertext, k3);
+    string step2 = des_encrypt_block(step1, k2);
+    return des_decrypt_block(step2, k1);
+}
+
+int main() {
+    int mode;
+    if (!(cin >> mode)) {
+        return 1;
+    }
+
+    if (mode == 1) {
+        string plaintext;
+        string key;
+        if (!(cin >> plaintext >> key)) {
+            return 1;
+        }
+        if (!is_binary_string(plaintext) || !is_binary_string(key) || key.size() != 64) {
+            return 1;
+        }
+        string ciphertext = process_des_encrypt(plaintext, key);
+        cout << ciphertext;
+        return 0;
+    }
+
+    if (mode == 2) {
+        string ciphertext;
+        string key;
+        if (!(cin >> ciphertext >> key)) {
+            return 1;
+        }
+        if (!is_binary_string(ciphertext) || !is_binary_string(key) || key.size() != 64 || ciphertext.size() % 64 != 0) {
+            return 1;
+        }
+        string plaintext = process_des_decrypt(ciphertext, key);
+        cout << plaintext;
+        return 0;
+    }
+
+    if (mode == 3) {
+        string plaintext;
+        string k1, k2, k3;
+        if (!(cin >> plaintext >> k1 >> k2 >> k3)) {
+            return 1;
+        }
+        if (!is_binary_string(plaintext) || plaintext.size() != 64 || !is_binary_string(k1) || k1.size() != 64 || !is_binary_string(k2) || k2.size() != 64 || !is_binary_string(k3) || k3.size() != 64) {
+            return 1;
+        }
+        string ciphertext = process_triple_des_encrypt(plaintext, k1, k2, k3);
+        cout << ciphertext;
+        return 0;
+    }
+
+    if (mode == 4) {
+        string ciphertext;
+        string k1, k2, k3;
+        if (!(cin >> ciphertext >> k1 >> k2 >> k3)) {
+            return 1;
+        }
+        if (!is_binary_string(ciphertext) || ciphertext.size() != 64 || !is_binary_string(k1) || k1.size() != 64 || !is_binary_string(k2) || k2.size() != 64 || !is_binary_string(k3) || k3.size() != 64) {
+            return 1;
+        }
+        string plaintext = process_triple_des_decrypt(ciphertext, k1, k2, k3);
+        cout << plaintext;
+        return 0;
+    }
+
+    return 1;
 }
 
     
