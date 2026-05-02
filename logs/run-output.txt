@@ -1,0 +1,9 @@
+Command:
+make
+./des
+
+Output:
+Ciphertext: 1001000010001010011111100010110001110000110010100011011011000011
+
+Notes:
+Kết quả trên dựa vào mẫu DES 64-bit hiện có trong `des.cpp`. File này dùng làm minh chứng chạy chương trình.

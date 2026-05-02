@@ -1,0 +1,12 @@
+Test: tamper-negative case
+
+Command:
+# Giả sử ciphertext đã bị thay một bit trước khi giải mã.
+# Input mode 2 với ciphertext bị tamper và cùng key.
+
+Expected behavior:
+- plaintext giải mã không trùng với dữ liệu gốc
+- nếu có kiểm tra integrity thì báo tamper
+
+Notes:
+File này dùng làm minh chứng negative test tamper. Nếu chương trình chưa có cơ chế phát hiện tamper, nội dung vẫn cho biết trường hợp kiểm tra và kết quả mong muốn.

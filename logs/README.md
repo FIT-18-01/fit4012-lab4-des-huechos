@@ -1,12 +1,21 @@
 # Logs directory
 
-Thư mục này dùng để nộp minh chứng thực tế của sinh viên.
+Thư mục này dùng để nộp minh chứng thực tế cho Lab 4 DES / TripleDES.
 
-Ví dụ file có thể đặt ở đây:
-- `run-output.txt`
-- `tamper-case.txt`
-- `wrong-key-case.txt`
-- `multiblock-output.txt`
-- ảnh chụp màn hình hoặc log test
+### Các file minh chứng cần có
 
-Lưu ý: file này chỉ là hướng dẫn, **không được tính là minh chứng nộp bài**.
+- `run-output.txt` — output của một lần chạy chương trình `./des` hoặc `make && ./des`
+- `roundtrip-output.txt` — ví dụ mã hóa DES rồi giải mã lại để chứng minh tái tạo plaintext
+- `multiblock-output.txt` — minh chứng xử lý plaintext dài hơn 64 bit và zero padding
+- `tamper-case.txt` — minh chứng negative test khi ciphertext bị thay đổi
+- `wrong-key-case.txt` — minh chứng negative test khi dùng sai key
+
+### Hướng dẫn nội dung
+
+Mỗi file log nên chứa:
+- lệnh đã chạy
+- input đã nhập (khi phù hợp)
+- output chương trình
+- chú thích ngắn gọn về kết quả
+
+> Lưu ý: file `logs/README.md` chỉ là tài liệu hướng dẫn. Các file `.txt` thực sự mới là minh chứng nộp bài.

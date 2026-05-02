@@ -1,0 +1,11 @@
+Test: wrong-key negative case
+
+Command:
+# Input mode 2 với ciphertext chính xác nhưng dùng sai key 64-bit.
+
+Expected output:
+- plaintext giải mã sai
+- chương trình phải cho thấy giải mã với key sai không được khôi phục đúng dữ liệu gốc
+
+Notes:
+File này là minh chứng negative test cho trường hợp dùng sai key khi giải mã.

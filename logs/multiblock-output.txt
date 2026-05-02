@@ -1,0 +1,9 @@
+Command:
+# Multi-block encryption sample when plaintext dài hơn 64 bit.
+# Input mode 1, plaintext được nối hai block 64-bit, key 64-bit.
+
+Expected output format:
+Ciphertext: <binary length 128>
+
+Notes:
+File này minh họa yêu cầu multi-block với zero padding cho block cuối nếu cần. Sau khi implement, cần ghi lại output thực tế.
