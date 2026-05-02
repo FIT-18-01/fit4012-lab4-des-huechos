@@ -1,7 +1,22 @@
 #!/usr/bin/env bash
-# TODO_STUDENT: Hoàn thiện test round-trip encrypt -> decrypt.
-# Gợi ý: sau khi em viết thêm giải mã, cần kiểm tra decrypt(encrypt(plaintext)) = plaintext.
 set -euo pipefail
 
-echo "TODO_STUDENT: implement round-trip test"
-exit 0
+cd "$(dirname "$0")/.."
+
+g++ -std=c++17 -Wall -Wextra -pedantic des.cpp -o des
+
+plaintext="1010110011101000101010010110001111000011001100101010101010110011"
+key="0001001100110100010101110111100110011011101111001101111111110001"
+
+ciphertext=$(printf "1\n%s\n%s\n" "$plaintext" "$key" | ./des)
+recovered=$(printf "2\n%s\n%s\n" "$ciphertext" "$key" | ./des)
+
+if [ "$recovered" != "$plaintext" ]; then
+  echo "DES round-trip test failed"
+  echo "plaintext:  $plaintext"
+  echo "ciphertext: $ciphertext"
+  echo "recovered:  $recovered"
+  exit 1
+fi
+
+echo "DES round-trip test passed"

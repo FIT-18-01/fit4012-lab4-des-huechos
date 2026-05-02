@@ -57,33 +57,49 @@ cmake --build build
 
 ## 3. Input / Đầu vào
 
-TODO_STUDENT: Mô tả rõ đầu vào của chương trình sau khi em hoàn thiện bài lab.
+Chương trình đọc từ `stdin` theo format sau:
+- dòng 1: `mode` (1, 2, 3 hoặc 4)
+- dòng tiếp theo và các dòng sau là dữ liệu nhị phân
 
-Gợi ý nên nêu:
-- plaintext đang được nhập như thế nào
-- key đang được nhập như thế nào
-- chương trình nhận 1 block hay nhiều block
-- định dạng dữ liệu là chuỗi bit, chuỗi ký tự hay file
+Các mode hỗ trợ:
+- `1`: DES encrypt
+  - input tiếp theo: plaintext nhị phân (có thể dài hơn 64 bit)
+  - input tiếp theo: key 64-bit
+- `2`: DES decrypt
+  - input tiếp theo: ciphertext nhị phân (độ dài phải là bội của 64)
+  - input tiếp theo: key 64-bit
+- `3`: TripleDES encrypt
+  - input tiếp theo: plaintext 64-bit
+  - input tiếp theo: K1 64-bit
+  - input tiếp theo: K2 64-bit
+  - input tiếp theo: K3 64-bit
+- `4`: TripleDES decrypt
+  - input tiếp theo: ciphertext 64-bit
+  - input tiếp theo: K1 64-bit
+  - input tiếp theo: K2 64-bit
+  - input tiếp theo: K3 64-bit
+
+Dữ liệu nhập phải là chuỗi `0`/`1` hợp lệ. Chương trình hiện tại không đọc file, chỉ nhận qua stdin.
 
 ## 4. Output / Đầu ra
 
-TODO_STUDENT: Mô tả rõ đầu ra của chương trình.
+Kết quả cuối cùng được in ra `stdout` dưới dạng một chuỗi nhị phân.
+- với mode `1` và `3`, output là ciphertext nhị phân
+- với mode `2` và `4`, output là plaintext nhị phân
 
-Gợi ý nên nêu:
-- ciphertext hiển thị ra sao
-- có in round keys hay không
-- có hỗ trợ giải mã hay không
-- với TripleDES thì đầu ra gồm những gì
+Chương trình hiện tại không in round keys trong output cuối cùng. Nó chỉ in kết quả ciphertext hoặc plaintext để CI dễ tách và đối chiếu.
 
 ## 5. Padding đang dùng
 
-TODO_STUDENT: Giải thích cơ chế padding em dùng.
+Với DES encrypt mode `1`, nếu plaintext dài hơn 64 bit thì chương trình chia dữ liệu thành các block 64-bit liên tiếp.
+- nếu block cuối có độ dài nhỏ hơn 64 bit, chương trình sẽ pad bằng các bit `0` ở cuối
+- với plaintext vừa đủ 64 bit thì không cần padding
 
-Gợi ý:
-- nếu plaintext dài hơn 64 bit thì chia block như thế nào
-- nếu thiếu bit thì pad bằng `0` ra sao
-- hạn chế của zero padding là gì
-- vì sao cách này chỉ phù hợp cho bài học nhập môn, không phải thiết kế an toàn hoàn chỉnh trong thực tế
+Zero padding có hạn chế:
+- nếu plaintext gốc kết thúc bằng nhiều bit `0`, lúc giải mã sẽ không thể biết chính xác đâu là padding và đâu là dữ liệu thực
+- đây là cách xử lý phù hợp cho bài học nhập môn, nhưng không đủ an toàn cho ứng dụng thực tế hoặc dữ liệu nhạy cảm
+
+Trong repository này, padding chỉ dùng để đảm bảo tính năng multi-block hoạt động theo yêu cầu bài lab.
 
 ## 6. Tests bắt buộc
 
